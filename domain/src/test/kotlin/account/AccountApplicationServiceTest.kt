@@ -4,6 +4,7 @@ import FakeData.aAccount
 import FakeData.aAccountAmountOperationCommand
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -11,7 +12,7 @@ import org.junit.jupiter.api.Test
 internal class AccountApplicationServiceTest {
 
     private val accountRepository = mockk<AccountRepository>(relaxed = true)
-    private val accountApplicationService = AccountApplicationService(accountRepository)
+    private val accountApplicationService = spyk(AccountApplicationService(accountRepository))
 
     @Test
     fun `should not handle amount operation when account does not exist`() {
@@ -27,17 +28,24 @@ internal class AccountApplicationServiceTest {
     }
 
     @Test
-    fun `should save account after a account amount operation`(){
+    fun `should update account after a account amount operation`() {
         // given
         val command = aAccountAmountOperationCommand()
-        every { accountRepository.getAccountById(command.accountId) } returns aAccount()
+        val account = spyk(aAccount())
+        every { accountRepository.getAccountById(command.accountId) } returns account
 
         // when
-        accountApplicationService.makeAccountAmountOperation(command)
+        val updatedAccount = accountApplicationService.makeAccountAmountOperation(command).getOrNull()!!
 
         // then
         verify(exactly = 1) { accountRepository.save(any()) }
+        verify(exactly = 1) { account.applyOperation(any()) }
+        Assertions.assertTrue(updatedAccount !== account) // immutability test
+        Assertions.assertTrue(updatedAccount.amount != account.amount)
+        Assertions.assertTrue(updatedAccount.operations!!.size != account.operations!!.size)
     }
+
+
     @Test
     fun `should check if account exists or not`(){
         // given

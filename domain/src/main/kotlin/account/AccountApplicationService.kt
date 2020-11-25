@@ -10,11 +10,12 @@ class AccountApplicationService(private val accountRepository: AccountRepository
 
     fun isAccountExist(accountId: AccountId): Boolean = accountRepository.getAccountById(accountId) != null
 
-    fun makeAccountAmountOperation(command: AccountAmountOperationCommand): Result<Unit> =
+    fun makeAccountAmountOperation(command: AccountAmountOperationCommand): Result<Account> =
             withExistingAccount(command.accountId) {
                 val operation = command.toOperation()
                 val updatedAccount = it.applyOperation(operation)
                 accountRepository.save(updatedAccount)
+                updatedAccount
             }
 
     fun getAccountHistory(accountId: AccountId): Result<Account.History> =
@@ -23,7 +24,7 @@ class AccountApplicationService(private val accountRepository: AccountRepository
             }
 
 
-    private fun <T> withExistingAccount(accountId: AccountId, run: (Account) -> T): Result<T> = Result.runCatching {
+    internal fun <T> withExistingAccount(accountId: AccountId, run: (Account) -> T): Result<T> = Result.runCatching {
         val account = accountRepository.getAccountById(accountId) ?: failNoExistingAccount()
         run(account)
     }
