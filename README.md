@@ -1,9 +1,9 @@
-# Hexagonal Bank
+# Bank account kata
 
 > Bank account kata with onion architecture (clean architecture), DDD, TDD
 
 >To run application execute main() in Application.kt
->Application boot with some demo data you can reteive some account ID: 1, 2 or 3 as you like
+>Application boot with some demo data you can retrieve some account ID: 1, 2 or 3 as you like
 
 Think of your personal bank account experience When in doubt, go for the simplest solution
 
